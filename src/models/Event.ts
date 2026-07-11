@@ -1,0 +1,3 @@
+import { Schema, model, models } from "mongoose";
+const schema = new Schema({title:{type:String,required:true},slug:{type:String,required:true,unique:true},description:String,startAt:{type:Date,required:true,index:true},endAt:Date,timezone:{type:String,default:"Africa/Lagos"},venue:String,mapUrl:String,capacity:Number,visibility:{type:String,enum:["public","members"],default:"members"},status:{type:String,enum:["draft","published","cancelled","completed"],default:"draft"},organiserId:{type:Schema.Types.ObjectId,ref:"User"}},{timestamps:true});
+export const Event=models.Event||model("Event",schema);
