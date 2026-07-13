@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { Brand } from "@/components/site-header";
+import LogoutButton from "@/components/logout-button";
 
 const recent = [
   ["Terna Iorfa", "terna@example.com", "Blue House", "photo-1"],
@@ -29,7 +30,7 @@ export default function Admin() {
             <LayoutDashboard size={18} />
             <span>Overview</span>
           </Link>
-          <Link href="/members">
+          <Link href="/admin/members">
             <Users size={18} />
             <span>Members</span>
           </Link>
@@ -55,10 +56,7 @@ export default function Admin() {
             <span>Site settings</span>
           </a>
           <div className="side-label">Account</div>
-          <Link href="/">
-            <LogOut size={18} />
-            <span>Sign out</span>
-          </Link>
+          <LogoutButton className="side-logout" />
         </div>
       </aside>
       <section className="dashboard-main">
