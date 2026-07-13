@@ -34,6 +34,10 @@ export default function Admin() {
             <Users size={18} />
             <span>Members</span>
           </Link>
+          <Link href="/admin/profiles">
+            <ShieldCheck size={18} />
+            <span>Profile moderation</span>
+          </Link>
           <Link href="/announcements">
             <Megaphone size={18} />
             <span>Announcements</span>

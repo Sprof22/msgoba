@@ -48,9 +48,18 @@ The signing route requires a verified session. Profile uploads are available to 
 - `/register` and `/login` — member onboarding
 - `/verify-email`, `/forgot-password`, `/reset-password` — account security
 - `/account/pending` — membership review status
+- `/profile` and `/profile/edit` — private biodata management and visibility controls
+- `/members/[id]` — privacy-filtered individual member profile
 - `/admin` — administrator overview
 - `/admin/members` — approve verified membership requests
+- `/admin/profiles` — moderate, correct, hide, memorialise, and export profiles
 - `/admin/media` — signed Cloudinary image uploader
 - `/api/health` — service health check
 
 The original project brief and delivery roadmap remain in `plan.md`.
+
+## Member data and privacy
+
+The member directory now reads from MongoDB and only returns approved, non-hidden profiles. Sensitive profile properties are assembled into response DTOs field by field according to their visibility setting: Only me, Administrators, Verified members, or Public. Profile updates, avatar removal, moderation changes, and directory exports create audit records.
+
+Profile photographs upload into `msg-2012/profiles`. When a member replaces or removes a photograph, the previous Cloudinary asset is deleted and its CDN cache invalidated.
