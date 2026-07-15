@@ -183,6 +183,12 @@ button {
   align-items: center;
   gap: 12px;
 }
+.brand-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  flex: 0 0 60px;
+}
 .brand-mark {
   width: 47px;
   height: 47px;
@@ -1205,6 +1211,11 @@ button {
   .brand-mark {
     width: 40px;
     height: 40px;
+  }
+  .brand-logo {
+    width: 49px;
+    height: 49px;
+    flex-basis: 49px;
   }
   .hero {
     min-height: 700px;

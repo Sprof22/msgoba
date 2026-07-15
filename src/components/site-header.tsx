@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, Mail, ShieldCheck, X } from "lucide-react";
@@ -8,7 +9,7 @@ import { Menu, Mail, ShieldCheck, X } from "lucide-react";
 const links = [["/", "Home"], ["/members", "Members"], ["/announcements", "Announcements"], ["/events", "Events"]];
 
 export function Brand() {
-  return <Link className="brand" href="/"><span className="brand-mark">MSG</span><span className="brand-copy"><strong>Mount Saint Gabriel&apos;s</strong><small>Class of 2012</small></span></Link>;
+  return <Link className="brand" href="/"><Image className="brand-logo" src="/images/msgoba-logo.png" width={64} height={64} alt="Mount Saint Gabriel's Old Boys Association logo" priority/><span className="brand-copy"><strong>Mount Saint Gabriel&apos;s</strong><small>Class of 2012</small></span></Link>;
 }
 
 export default function SiteHeader() {
