@@ -38,6 +38,7 @@ export async function getCurrentUser() {
 }
 
 export function hasAdminRole(user: { roles: string[] } | null) { return Boolean(user?.roles.some(role => ["admin", "super_admin"].includes(role))); }
+export function hasContentRole(user: { roles: string[] } | null) { return Boolean(user?.roles.some(role => ["editor", "admin", "super_admin"].includes(role))); }
 
 export async function assertSameOrigin(request: Request) {
   const origin = request.headers.get("origin");

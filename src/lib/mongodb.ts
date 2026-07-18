@@ -9,7 +9,12 @@ globalWithMongoose.mongooseCache = cached;
 export async function connectToDatabase() {
   if (!MONGODB_URI) throw new Error("Set MONGODB_URI in your environment before using database features.");
   if (cached.conn) return cached.conn;
-  cached.promise ??= mongoose.connect(MONGODB_URI, { bufferCommands: false });
-  cached.conn = await cached.promise;
-  return cached.conn;
+  cached.promise ??= mongoose.connect(MONGODB_URI, { bufferCommands: false, serverSelectionTimeoutMS: 8000 });
+  try {
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (error) {
+    cached.promise = null;
+    throw error;
+  }
 }

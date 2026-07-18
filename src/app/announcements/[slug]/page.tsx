@@ -1,0 +1,8 @@
+"use client";
+import { useParams } from "next/navigation";
+import { useEffect,useState } from "react";
+import Link from "next/link";
+import { ArrowLeft,CalendarDays,LoaderCircle,LockKeyhole } from "lucide-react";
+import SiteHeader from "@/components/site-header";
+import SiteFooter from "@/components/site-footer";
+export default function AnnouncementDetail(){const {slug}=useParams<{slug:string}>(),[item,setItem]=useState<any>(),[error,setError]=useState("");useEffect(()=>{fetch(`/api/announcements/${slug}`).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error);setItem(d.announcement)}).catch(e=>setError(e.message))},[slug]);return <><SiteHeader/><main>{error?<div className="profile-loading"><div><h2>{error}</h2><Link className="text-link" href="/announcements"><ArrowLeft/>Back to announcements</Link></div></div>:item?<article className="article-page">{item.coverImage&&<div className="article-cover" style={{backgroundImage:`linear-gradient(180deg,transparent,rgba(7,29,60,.7)),url(${item.coverImage})`}}/>}<div className="article-container"><Link className="text-link" href="/announcements"><ArrowLeft size={14}/>All announcements</Link><div className="article-meta"><span className="tag">{item.category}</span>{item.audience!=="public"&&<span><LockKeyhole/>Members only</span>}<span><CalendarDays/>{new Date(item.publishAt||item.createdAt).toLocaleDateString(undefined,{dateStyle:"long"})}</span></div><h1>{item.title}</h1><p className="article-lead">{item.summary}</p><div className="article-body">{item.body.split(/\n+/).map((p:string,i:number)=><p key={i}>{p}</p>)}</div></div></article>:<div className="profile-loading"><LoaderCircle className="spin"/>Loading announcement…</div>}</main><SiteFooter/></>}

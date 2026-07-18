@@ -63,3 +63,14 @@ The original project brief and delivery roadmap remain in `plan.md`.
 The member directory now reads from MongoDB and only returns approved, non-hidden profiles. Sensitive profile properties are assembled into response DTOs field by field according to their visibility setting: Only me, Administrators, Verified members, or Public. Profile updates, avatar removal, moderation changes, and directory exports create audit records.
 
 Profile photographs upload into `msg-2012/profiles`. When a member replaces or removes a photograph, the previous Cloudinary asset is deleted and its CDN cache invalidated.
+
+## Announcements, events, and RSVPs
+
+Editors can create drafts and submit content for review. Administrators can publish, schedule, cancel, complete, archive, export attendance, and target public, member, or administrator audiences.
+
+- `/admin/announcements` — announcement editorial workflow
+- `/admin/events` — event and attendance management
+- `/announcements/[slug]` — published announcement
+- `/events/[slug]` — event details, RSVP, guests, and calendar download
+
+Publishing creates an auditable notification job in MongoDB. A delivery worker can later process these jobs through Resend without blocking the publishing request.

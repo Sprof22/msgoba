@@ -38,11 +38,11 @@ export default function Admin() {
             <ShieldCheck size={18} />
             <span>Profile moderation</span>
           </Link>
-          <Link href="/announcements">
+          <Link href="/admin/announcements">
             <Megaphone size={18} />
             <span>Announcements</span>
           </Link>
-          <Link href="/events">
+          <Link href="/admin/events">
             <CalendarDays size={18} />
             <span>Events</span>
           </Link>

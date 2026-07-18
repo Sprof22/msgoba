@@ -1,0 +1,4 @@
+import { Schema, model, models } from "mongoose";
+const schema=new Schema({kind:{type:String,enum:["announcement_published","event_published","event_updated","event_cancelled","event_reminder"],required:true,index:true},audience:{type:String,enum:["public","members","admins"],required:true},entityType:{type:String,enum:["announcement","event"],required:true},entityId:{type:Schema.Types.ObjectId,required:true,index:true},subject:{type:String,required:true},preview:String,status:{type:String,enum:["pending","processing","sent","failed","cancelled"],default:"pending",index:true},scheduledFor:{type:Date,default:Date.now,index:true},attempts:{type:Number,default:0},processedAt:Date,lastError:String,createdBy:{type:Schema.Types.ObjectId,ref:"User",required:true}},{timestamps:true});
+schema.index({status:1,scheduledFor:1});
+export const NotificationJob=models.NotificationJob||model("NotificationJob",schema);
