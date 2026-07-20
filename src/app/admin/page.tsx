@@ -95,8 +95,8 @@ export default async function Admin() {
   const pendingIds = pendingRequestsBase.map((member) => member.id);
   const pendingProfiles = pendingIds.length
     ? await MemberProfile.find({ userId: { $in: pendingIds } })
-        .select("userId profileImage")
-        .lean()
+      .select("userId profileImage")
+      .lean()
     : [];
   const imageByUserId = new Map(
     (pendingProfiles as any[]).map((profile) => [
