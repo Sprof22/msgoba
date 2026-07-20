@@ -53,6 +53,8 @@ The signing route requires a verified session. Profile uploads are available to 
 - `/admin` — administrator overview
 - `/admin/members` — approve verified membership requests
 - `/admin/profiles` — moderate, correct, hide, memorialise, and export profiles
+- `/admin/announcements` — editorial drafts, review, scheduling, preview, publication, covers, and attachments
+- `/announcements` and `/announcements/[slug]` — searchable, audience-filtered published news
 - `/admin/media` — signed Cloudinary image uploader
 - `/api/health` — service health check
 
@@ -63,6 +65,12 @@ The original project brief and delivery roadmap remain in `plan.md`.
 The member directory now reads from MongoDB and only returns approved, non-hidden profiles. Sensitive profile properties are assembled into response DTOs field by field according to their visibility setting: Only me, Administrators, Verified members, or Public. Profile updates, avatar removal, moderation changes, and directory exports create audit records.
 
 Profile photographs upload into `msg-2012/profiles`. When a member replaces or removes a photograph, the previous Cloudinary asset is deleted and its CDN cache invalidated.
+
+## Announcement publishing
+
+Editors can create drafts and submit them for review. Administrators and Super Admins can schedule, publish, pin, feature, expire, and archive announcements. Public, verified-member, and administrator audiences are enforced in server queries; expired or unpublished items are never returned by public APIs.
+
+Cover images and supporting PDF/office documents upload directly to Cloudinary using short-lived signed requests. Replaced covers and removed attachments are deleted from Cloudinary. Publishing and archival actions are written to the audit log, while scheduled notification jobs are created for future Resend delivery.
 
 ## Announcements, events, and RSVPs
 

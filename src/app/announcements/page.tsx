@@ -1,7 +1,184 @@
 "use client";
-import { useEffect,useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight,Bell,ChevronLeft,ChevronRight,LoaderCircle,Megaphone } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  LoaderCircle,
+  Megaphone,
+  Search,
+} from "lucide-react";
 import PageShell from "@/components/page-shell";
-type Item={_id:string;title:string;slug:string;summary:string;coverImage?:string;category:string;audience:string;featured:boolean;pinned:boolean;publishAt?:string;publishedAt?:string;createdAt:string};
-export default function Announcements(){const [items,setItems]=useState<Item[]>([]),[page,setPage]=useState(1),[pages,setPages]=useState(1),[loading,setLoading]=useState(true);async function load(p=1){setLoading(true);const r=await fetch(`/api/announcements?page=${p}`),d=await r.json();setItems(d.announcements||[]);setPage(d.pagination?.page||1);setPages(d.pagination?.pages||1);setLoading(false)}useEffect(()=>{load()},[]);return <PageShell eyebrow="News & notices" title="Announcements" description="Official updates from the executive council, reunion committee, welfare team, and the wider Class of 2012 community."><section className="section"><div className="container"><div className="section-head"><div><span className="eyebrow">Latest first</span><h2>Stay informed</h2></div><p><Bell size={16}/> Members-only notices appear automatically after you sign in.</p></div>{loading?<div className="loading-state"><LoaderCircle className="spin"/>Loading announcements…</div>:items.length?<><div className="notice-list">{items.map(n=>{const date=new Date(n.publishAt||n.publishedAt||n.createdAt);return <article className={`card notice ${n.featured?"featured-notice":""}`} key={n._id}>{n.coverImage?<div className="notice-cover" style={{backgroundImage:`url(${n.coverImage})`}}/>:<div className="notice-date"><b>{date.getDate().toString().padStart(2,"0")}</b><span>{date.toLocaleString("en",{month:"short"}).toUpperCase()}</span></div>}<div><span className="tag"><Megaphone size={11}/>{n.category}{n.audience!=="public"&&" · Members"}</span><h3>{n.title}</h3><p>{n.summary}</p></div><Link className="btn btn-navy" href={`/announcements/${n.slug}`}>Read more <ArrowRight size={14}/></Link></article>})}</div><div className="pagination"><button disabled={page<=1} onClick={()=>load(page-1)}><ChevronLeft/>Previous</button><span>Page {page} of {pages}</span><button disabled={page>=pages} onClick={()=>load(page+1)}>Next<ChevronRight/></button></div></>:<div className="empty-state"><Megaphone/><h3>No announcements yet</h3><p>Published updates will appear here.</p></div>}</div></section></PageShell>}
+type Item = {
+  _id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  coverImage?: string;
+  category: string;
+  audience: string;
+  featured: boolean;
+  pinned: boolean;
+  publishAt?: string;
+  publishedAt?: string;
+  createdAt: string;
+};
+export default function Announcements() {
+  const [items, setItems] = useState<Item[]>([]),
+    [page, setPage] = useState(1),
+    [pages, setPages] = useState(1),
+    [loading, setLoading] = useState(true),
+    [query, setQuery] = useState(""),
+    [category, setCategory] = useState("");
+  async function load(p = 1, q = query, selectedCategory = category) {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(p) });
+    if (q.trim()) params.set("q", q.trim());
+    if (selectedCategory) params.set("category", selectedCategory);
+    const r = await fetch(`/api/announcements?${params}`),
+      d = await r.json();
+    setItems(d.announcements || []);
+    setPage(d.pagination?.page || 1);
+    setPages(d.pagination?.pages || 1);
+    setLoading(false);
+  }
+  useEffect(() => {
+    load();
+  }, []);
+  function search(event: FormEvent) {
+    event.preventDefault();
+    load(1);
+  }
+  return (
+    <PageShell
+      eyebrow="News & notices"
+      title="Announcements"
+      description="Official updates from the executive council, reunion committee, welfare team, and the wider Class of 2012 community."
+    >
+      <section className="section">
+        <div className="container">
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">Latest first</span>
+              <h2>Stay informed</h2>
+            </div>
+            <p>
+              <Bell size={16} /> Members-only notices appear automatically after
+              you sign in.
+            </p>
+          </div>
+          <form className="announcement-filters" onSubmit={search}>
+            <div className="search">
+              <Search size={18} />
+              <input
+                className="input"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search announcements…"
+              />
+            </div>
+            <select
+              className="select"
+              value={category}
+              onChange={(event) => {
+                setCategory(event.target.value);
+                load(1, query, event.target.value);
+              }}
+              aria-label="Filter announcements by category"
+            >
+              <option value="">All categories</option>
+              {[
+                "general",
+                "welfare",
+                "reunion",
+                "executive",
+                "community",
+                "business",
+                "memorial",
+              ].map((value) => (
+                <option value={value} key={value}>
+                  {value[0].toUpperCase() + value.slice(1)}
+                </option>
+              ))}
+            </select>
+            <button className="btn btn-navy">Search</button>
+          </form>
+          {loading ? (
+            <div className="loading-state">
+              <LoaderCircle className="spin" />
+              Loading announcements…
+            </div>
+          ) : items.length ? (
+            <>
+              <div className="notice-list">
+                {items.map((n) => {
+                  const date = new Date(
+                    n.publishAt || n.publishedAt || n.createdAt,
+                  );
+                  return (
+                    <article
+                      className={`card notice ${n.featured ? "featured-notice" : ""}`}
+                      key={n._id}
+                    >
+                      {n.coverImage ? (
+                        <div
+                          className="notice-cover"
+                          style={{ backgroundImage: `url(${n.coverImage})` }}
+                        />
+                      ) : (
+                        <div className="notice-date">
+                          <b>{date.getDate().toString().padStart(2, "0")}</b>
+                          <span>
+                            {date
+                              .toLocaleString("en", { month: "short" })
+                              .toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <span className="tag">
+                          <Megaphone size={11} />
+                          {n.category}
+                          {n.audience !== "public" && " · Members"}
+                        </span>
+                        <h3>{n.title}</h3>
+                        <p>{n.summary}</p>
+                      </div>
+                      <Link
+                        className="btn btn-navy"
+                        href={`/announcements/${n.slug}`}
+                      >
+                        Read more <ArrowRight size={14} />
+                      </Link>
+                    </article>
+                  );
+                })}
+              </div>
+              <div className="pagination">
+                <button disabled={page <= 1} onClick={() => load(page - 1)}>
+                  <ChevronLeft />
+                  Previous
+                </button>
+                <span>
+                  Page {page} of {pages}
+                </span>
+                <button disabled={page >= pages} onClick={() => load(page + 1)}>
+                  Next
+                  <ChevronRight />
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="empty-state">
+              <Megaphone />
+              <h3>No announcements yet</h3>
+              <p>Published updates will appear here.</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </PageShell>
+  );
+}

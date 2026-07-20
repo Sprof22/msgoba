@@ -1,10 +1,85 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-import { assertSameOrigin,getCurrentUser,hasAdminRole,hasContentRole } from "@/lib/auth";
+import {
+  assertSameOrigin,
+  getCurrentUser,
+  hasAdminRole,
+  hasContentRole,
+} from "@/lib/auth";
 import { slugify } from "@/lib/content";
 import { connectToDatabase } from "@/lib/mongodb";
 import { recordPublication } from "@/lib/publishing";
 import { Announcement } from "@/models/Announcement";
-const schema=z.object({title:z.string().trim().min(5).max(160),summary:z.string().trim().min(10).max(350),body:z.string().trim().min(20).max(30000),category:z.enum(["general","welfare","reunion","executive","community","business","memorial"]),audience:z.enum(["public","members","admins"]),status:z.enum(["draft","review","scheduled","published","archived"]),featured:z.boolean().default(false),pinned:z.boolean().default(false),coverImage:z.string().url().or(z.literal("")).optional(),coverImagePublicId:z.string().optional(),publishAt:z.string().optional(),expiresAt:z.string().optional()});
-export async function GET(){const actor=await getCurrentUser();if(!hasContentRole(actor))return NextResponse.json({error:"Forbidden"},{status:403});await connectToDatabase();const items=await Announcement.find({}).sort({updatedAt:-1}).limit(200).lean();return NextResponse.json({announcements:items})}
-export async function POST(request:Request){try{await assertSameOrigin(request);const actor=await getCurrentUser();if(!hasContentRole(actor))return NextResponse.json({error:"Forbidden"},{status:403});const parsed=schema.safeParse(await request.json());if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message||"Check the announcement."},{status:400});if(!hasAdminRole(actor)&&!["draft","review"].includes(parsed.data.status))return NextResponse.json({error:"Only administrators can publish or schedule."},{status:403});await connectToDatabase();const base=slugify(parsed.data.title)||"announcement";let slug=base,suffix=1;while(await Announcement.exists({slug}))slug=`${base}-${++suffix}`;const data:any={...parsed.data,slug,authorId:actor!.id,lastEditorId:actor!.id,publishAt:parsed.data.publishAt?new Date(parsed.data.publishAt):undefined,expiresAt:parsed.data.expiresAt?new Date(parsed.data.expiresAt):undefined};if(data.status==="published"){data.publishedAt=new Date();data.publishAt=data.publishAt||new Date();data.publishedBy=actor!.id}const item=await Announcement.create(data);await recordPublication({actorId:actor!.id,action:"announcement.created",entityType:"announcement",entity:item,notify:true});return NextResponse.json({message:"Announcement created.",announcement:item},{status:201})}catch(error){console.error(error);return NextResponse.json({error:"Unable to create announcement."},{status:500})}}
+import { announcementInputSchema } from "@/lib/announcement";
+export async function GET() {
+  const actor = await getCurrentUser();
+  if (!hasContentRole(actor))
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  await connectToDatabase();
+  const items = await Announcement.find({})
+    .sort({ updatedAt: -1 })
+    .limit(200)
+    .lean();
+  return NextResponse.json({ announcements: items });
+}
+export async function POST(request: Request) {
+  try {
+    await assertSameOrigin(request);
+    const actor = await getCurrentUser();
+    if (!hasContentRole(actor))
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const parsed = announcementInputSchema.safeParse(await request.json());
+    if (!parsed.success)
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Check the announcement." },
+        { status: 400 },
+      );
+    if (
+      !hasAdminRole(actor) &&
+      !["draft", "review"].includes(parsed.data.status)
+    )
+      return NextResponse.json(
+        { error: "Only administrators can publish or schedule." },
+        { status: 403 },
+      );
+    await connectToDatabase();
+    const base = slugify(parsed.data.title) || "announcement";
+    let slug = base,
+      suffix = 1;
+    while (await Announcement.exists({ slug })) slug = `${base}-${++suffix}`;
+    const data: any = {
+      ...parsed.data,
+      slug,
+      authorId: actor!.id,
+      lastEditorId: actor!.id,
+      publishAt: parsed.data.publishAt
+        ? new Date(parsed.data.publishAt)
+        : undefined,
+      expiresAt: parsed.data.expiresAt
+        ? new Date(parsed.data.expiresAt)
+        : undefined,
+    };
+    if (data.status === "published") {
+      data.publishedAt = new Date();
+      data.publishAt = data.publishAt || new Date();
+      data.publishedBy = actor!.id;
+    }
+    const item = await Announcement.create(data);
+    await recordPublication({
+      actorId: actor!.id,
+      action: "announcement.created",
+      entityType: "announcement",
+      entity: item,
+      notify: true,
+    });
+    return NextResponse.json(
+      { message: "Announcement created.", announcement: item },
+      { status: 201 },
+    );
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Unable to create announcement." },
+      { status: 500 },
+    );
+  }
+}

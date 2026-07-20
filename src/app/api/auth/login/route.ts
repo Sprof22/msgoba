@@ -54,13 +54,16 @@ export async function POST(request: Request) {
     await createSession(String(user._id));
     user.lastLoginAt = new Date();
     await user.save();
-    const staff = user.roles.some((role: string) =>
-      ["editor", "admin", "super_admin"].includes(role),
+    const administrator = user.roles.some((role: string) =>
+      ["admin", "super_admin"].includes(role),
     );
+    const editor = user.roles.includes("editor");
     return NextResponse.json({
       message: "Signed in successfully.",
-        redirectTo: staff
+      redirectTo: administrator
         ? "/admin"
+        : editor
+          ? "/admin/announcements"
         : user.status === "verified"
           ? "/members"
           : "/account/pending",

@@ -14,13 +14,17 @@ import {
 } from "lucide-react";
 import { Brand } from "@/components/site-header";
 import LogoutButton from "@/components/logout-button";
+import { getCurrentUser, hasAdminRole } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 const recent = [
   ["Terna Iorfa", "terna@example.com", "Blue House", "photo-1"],
   ["Gabriel Onoja", "gabriel@example.com", "Red House", "photo-2"],
   ["Paul Orngu", "paul@example.com", "Blue House", "photo-3"],
 ];
-export default function Admin() {
+export default async function Admin() {
+  const user = await getCurrentUser();
+  if (!hasAdminRole(user)) redirect("/admin/announcements");
   return (
     <main className="dashboard-shell">
       <aside className="sidebar">
@@ -69,7 +73,7 @@ export default function Admin() {
             <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
               Saturday, 11 July 2026
             </p>
-            <h1>Good afternoon, Terna.</h1>
+            <h1>Welcome back, {user!.name.split(" ")[0]}.</h1>
           </div>
           <div className="admin-user">
             <button className="dash-icon" aria-label="Notifications">
@@ -77,7 +81,7 @@ export default function Admin() {
             </button>
             <div className="avatar photo-1" />
             <div>
-              <b style={{ fontSize: 12 }}>Terna Iorfa</b>
+              <b style={{ fontSize: 12 }}>{user!.name}</b>
               <p style={{ fontSize: 10, color: "var(--muted)", margin: 0 }}>
                 Super Admin
               </p>
