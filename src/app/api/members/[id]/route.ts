@@ -20,7 +20,11 @@ export async function GET(
     return NextResponse.json({ error: "Member not found." }, { status: 404 });
   await connectToDatabase();
   const [account, profile] = await Promise.all([
-    User.findOne({ _id: id, status: "verified" }).lean(),
+    User.findOne({
+      _id: id,
+      status: "verified",
+      roles: { $nin: ["admin", "super_admin"] },
+    }).lean(),
     MemberProfile.findOne({ userId: id }).lean(),
   ]);
   if (

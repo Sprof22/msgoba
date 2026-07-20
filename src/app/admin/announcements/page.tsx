@@ -87,6 +87,7 @@ export default function AnnouncementAdmin() {
     e.preventDefault();
     setSaving(true);
     setError("");
+    const isEditing = Boolean(editing?._id);
     const f = new FormData(e.currentTarget),
       body = {
         title: f.get("title"),
@@ -104,11 +105,11 @@ export default function AnnouncementAdmin() {
         expiresAt: f.get("expiresAt") || undefined,
         attachments,
       },
-      url = editing
+      url = isEditing
         ? `/api/admin/announcements/${editing._id}`
         : "/api/admin/announcements",
       r = await fetch(url, {
-        method: editing ? "PATCH" : "POST",
+        method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       }),

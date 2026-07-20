@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
     ),
     limit = 12,
     query = request.nextUrl.searchParams.get("q")?.trim().slice(0, 80) || "",
-    house = request.nextUrl.searchParams.get("house")?.trim(),
     country = request.nextUrl.searchParams.get("country")?.trim(),
     occupation = request.nextUrl.searchParams.get("occupation")?.trim();
   const filter: any = {
@@ -41,21 +40,23 @@ export async function GET(request: NextRequest) {
       { country: { $regex: safe, $options: "i" } },
     ];
   }
-  if (house) filter.house = house;
   if (country) filter.country = country;
   if (occupation)
     filter.occupation = {
       $regex: occupation.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
       $options: "i",
     };
-  const approved = (await User.find({ status: "verified" })
+  const approved = (await User.find({
+    status: "verified",
+    roles: { $nin: ["admin", "super_admin"] },
+  })
     .select("_id")
     .lean()) as any[];
   filter.userId = { $in: approved.map((u) => u._id) };
   const [profiles, total] = await Promise.all([
     MemberProfile.find(filter)
       .select(
-        "userId fullName nickname profileImage house occupation city country moderationStatus professionalSummary",
+        "userId fullName nickname profileImage occupation city country moderationStatus professionalSummary",
       )
       .sort({ fullName: 1 })
       .skip((page - 1) * limit)
@@ -69,7 +70,6 @@ export async function GET(request: NextRequest) {
       fullName: p.fullName,
       nickname: p.nickname,
       profileImage: p.profileImage,
-      house: p.house,
       occupation: p.occupation,
       city: p.city,
       country: p.country,
