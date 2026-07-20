@@ -1,7 +1,7 @@
 import "server-only";
 import { Resend } from "resend";
 
-export async function sendAuthEmail({ to, name, url, purpose }: { to:string; name:string; url:string; purpose:"verify"|"reset" }) {
+export async function sendAuthEmail({ to, name, url, purpose }: { to: string; name: string; url: string; purpose: "verify" | "reset" }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     if (process.env.NODE_ENV === "production") throw new Error("Email delivery is not configured.");
@@ -107,7 +107,7 @@ function buildAuthEmailHtml({
 </html>`;
 }
 
-function getLogoUrl(targetUrl:string){
+function getLogoUrl(targetUrl: string) {
   try {
     const origin = new URL(targetUrl).origin;
     return `${origin}/images/msgoba-logo.png`;
@@ -116,4 +116,4 @@ function getLogoUrl(targetUrl:string){
   }
 }
 
-function escapeHtml(value:string){return value.replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]!))}
+function escapeHtml(value: string) { return value.replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]!)) }
