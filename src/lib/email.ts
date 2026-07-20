@@ -1,5 +1,5 @@
 import "server-only";
-import { Resend } from "resend";
+import { Resend, type Attachment } from "resend";
 
 export async function sendAuthEmail({ to, name, url, purpose }: { to: string; name: string; url: string; purpose: "verify" | "reset" }) {
   const apiKey = process.env.RESEND_API_KEY;
@@ -14,11 +14,14 @@ export async function sendAuthEmail({ to, name, url, purpose }: { to: string; na
   const preheader = verifying
     ? "Verify your MSGOBA account to continue your membership request."
     : "Use this secure link to choose a new MSGOBA password.";
+  const logoAttachment = await buildLogoAttachment(url);
   const { error } = await resend.emails.send({
     from: process.env.AUTH_EMAIL_FROM || "MSG Class of 2012 <onboarding@resend.dev>", to, subject: verifying ? "Verify your MSG 2012 account" : "Reset your MSG 2012 password",
+    attachments: logoAttachment ? [logoAttachment] : undefined,
     html: buildAuthEmailHtml({
       name,
       url,
+      logoSrc: logoAttachment ? "cid:msgoba-logo" : getLogoUrl(url),
       heading: verifying ? "Welcome to the brotherhood" : "Reset your password",
       intro: verifying
         ? "Verify your email address to continue your membership request."
@@ -37,6 +40,7 @@ export async function sendAuthEmail({ to, name, url, purpose }: { to: string; na
 function buildAuthEmailHtml({
   name,
   url,
+  logoSrc,
   heading,
   intro,
   buttonLabel,
@@ -45,6 +49,7 @@ function buildAuthEmailHtml({
 }: {
   name: string;
   url: string;
+  logoSrc?: string;
   heading: string;
   intro: string;
   buttonLabel: string;
@@ -58,9 +63,8 @@ function buildAuthEmailHtml({
   const escapedNote = escapeHtml(note);
   const escapedPreheader = escapeHtml(preheader);
   const escapedUrl = escapeHtml(url);
-  const logoUrl = getLogoUrl(url);
-  const logoBlock = logoUrl
-    ? `<img src="${logoUrl}" width="64" height="64" alt="MSGOBA logo" style="display:block;border:0;outline:none;text-decoration:none;margin:0 auto 14px;"/>`
+  const logoBlock = logoSrc
+    ? `<div style="display:inline-block;margin:0 auto 18px;padding:12px 14px;border-radius:28px;background:#f8f5ee;border:3px solid #d7a84a;box-shadow:0 10px 24px rgba(0,0,0,0.18);"><img src="${escapeHtml(logoSrc)}" width="96" height="96" alt="MSGOBA logo" style="display:block;border:0;outline:none;text-decoration:none;"/></div>`
     : "";
 
   return `<!doctype html>
@@ -111,6 +115,30 @@ function getLogoUrl(targetUrl: string) {
   try {
     const origin = new URL(targetUrl).origin;
     return `${origin}/images/msgoba-logo.png`;
+  } catch {
+    return undefined;
+  }
+}
+
+async function buildLogoAttachment(targetUrl: string): Promise<Attachment | undefined> {
+  const logoUrl = getLogoUrl(targetUrl);
+  if (!logoUrl) return undefined;
+
+  try {
+    const response = await fetch(logoUrl);
+    if (!response.ok) return undefined;
+
+    const contentType = response.headers.get("content-type") || "image/png";
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
+
+    if (!imageBuffer.length) return undefined;
+
+    return {
+      filename: "msgoba-logo.png",
+      content: imageBuffer,
+      contentType,
+      contentId: "msgoba-logo",
+    };
   } catch {
     return undefined;
   }
