@@ -10,6 +10,7 @@ import {
   Megaphone,
   Settings,
   ShieldCheck,
+  Sparkles,
   Users,
 } from "lucide-react";
 import { Brand } from "@/components/site-header";
@@ -41,6 +42,10 @@ export default async function Admin() {
           <Link href="/admin/profiles">
             <ShieldCheck size={18} />
             <span>Profile moderation</span>
+          </Link>
+          <Link href="/admin/legacy-brothers">
+            <Sparkles size={18} />
+            <span>Legacy brothers</span>
           </Link>
           <Link href="/admin/announcements">
             <Megaphone size={18} />

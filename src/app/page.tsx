@@ -6,21 +6,18 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { liveContentFilter, liveEventFilter } from "@/lib/content";
 import { Announcement } from "@/models/Announcement";
 import { Event } from "@/models/Event";
+import { LegacyBrother } from "@/models/LegacyBrother";
 
 export const dynamic = "force-dynamic";
 
-const members = [
-  { name: "Terna Iorfa", role: "Civil Engineer", place: "Abuja, Nigeria", photo: "photo-1" },
-  { name: "Emmanuel Oche", role: "Product Designer", place: "Lagos, Nigeria", photo: "photo-2" },
-  { name: "David Utsaha", role: "Medical Doctor", place: "Manchester, UK", photo: "photo-3" },
-  { name: "Samuel Gbaa", role: "Entrepreneur", place: "Makurdi, Nigeria", photo: "photo-4" },
-];
+const fallbackPhotos = ["photo-1", "photo-2", "photo-3", "photo-4"];
 
 export default async function Home() {
   await connectToDatabase();
-  const [event, announcements] = await Promise.all([
+  const [event, announcements, legacyBrothers] = await Promise.all([
     Event.findOne({ ...liveEventFilter(["public"]), status: { $ne: "cancelled" }, startAt: { $gte: new Date() } }).sort({ featured: -1, startAt: 1 }).lean() as Promise<any>,
     Announcement.find(liveContentFilter(["public"])).sort({ pinned: -1, featured: -1, publishAt: -1 }).limit(2).lean() as Promise<any[]>,
+    LegacyBrother.find({ active: true }).sort({ order: 1, updatedAt: -1 }).limit(8).lean() as Promise<any[]>,
   ]);
   const updates = [
     ...(event ? [{ ...event, kind: "event", date: event.startAt }] : []),
@@ -36,7 +33,7 @@ export default async function Home() {
 
       <section className="section legacy" id="legacy"><div className="container legacy-grid"><div className="legacy-photo"><div className="legacy-seal">In God<br />Our Strength</div></div><div><span className="eyebrow">Our shared legacy</span><h2>We left the school.<br />The school never left us.</h2><p>We arrived as boys from different homes and left as brothers with a common story. The discipline, faith and friendships formed at Mount Saint Gabriel&apos;s continue to shape the men we are today.</p><div className="quote">“The Mount gave us more than an education. It gave us each other.”</div><p>This digital home keeps that bond alive—wherever life has taken us—and creates room for the next chapter of our collective story.</p><div className="legacy-values"><div><ShieldCheck size={18} /> Faith & character</div><div><Users size={18} /> Lifelong brotherhood</div><div><Sparkles size={18} /> Service & legacy</div></div></div></div></section>
 
-      <section className="section"><div className="container"><div className="section-head"><div><span className="eyebrow">Across the world</span><h2>Meet the brothers<br />behind the legacy</h2></div><div><p>Different paths, one foundation. Reconnect, collaborate, and celebrate how far we have all come.</p><Link className="text-link" href="/members">View all members <ArrowRight size={14} /></Link></div></div><div className="member-row">{members.map(m => <Link href="/members" className="card member-card" key={m.name}><div className={`member-photo ${m.photo}`}><i className="member-status" /></div><div className="member-info"><h3>{m.name}</h3><p>{m.role}</p><div className="member-meta"><span><MapPin size={12} />{m.place}</span><span><Globe2 size={12} />2012</span></div></div></Link>)}</div></div></section>
+      <section className="section"><div className="container"><div className="section-head"><div><span className="eyebrow">Across the world</span><h2>Meet the brothers<br />behind the legacy</h2></div><div><p>Different paths, one foundation. Reconnect, collaborate, and celebrate how far we have all come.</p><Link className="text-link" href="/members">View all members <ArrowRight size={14} /></Link></div></div>{legacyBrothers.length ? <div className="member-row">{legacyBrothers.map((m, index) => <Link href="/members" className="card member-card" key={String(m._id)}><div className={`member-photo ${m.photo ? "" : fallbackPhotos[index % fallbackPhotos.length]}`} style={m.photo ? { backgroundImage: `url(${m.photo})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}><i className="member-status" /></div><div className="member-info"><h3>{m.name}</h3><p>{m.role}</p><div className="member-meta"><span><MapPin size={12} />{m.place}</span><span><Globe2 size={12} />2012</span></div></div></Link>)}</div> : <div className="empty-state compact-empty"><Users/><h3>Legacy section is being curated</h3><p>Profiles selected by administrators will appear here soon.</p></div>}</div></section>
 
       <section className="cta-band"><div className="container cta-inner"><div><h2>Your story belongs here.</h2><p>Join the official Class of 2012 directory and reconnect with the brotherhood.</p></div><Link className="btn btn-navy" href="/register">Create your profile <ArrowRight size={17} /></Link></div></section>
     </main>

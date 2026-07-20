@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         { status: 403 },
       );
     if (
-      ["gallery", "adverts"].includes(body.folder || "") &&
+      ["gallery", "adverts", "legacy"].includes(body.folder || "") &&
       !hasAdminRole(user)
     )
       return NextResponse.json(

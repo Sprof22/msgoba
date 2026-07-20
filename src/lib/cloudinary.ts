@@ -10,5 +10,5 @@ export function getCloudinaryConfig() {
   return { cloudinary, cloudName, apiKey, apiSecret };
 }
 
-export const CLOUDINARY_FOLDERS = { profiles: "msg-2012/profiles", gallery: "msg-2012/gallery", announcements: "msg-2012/announcements", adverts: "msg-2012/adverts" } as const;
+export const CLOUDINARY_FOLDERS = { profiles: "msg-2012/profiles", gallery: "msg-2012/gallery", announcements: "msg-2012/announcements", adverts: "msg-2012/adverts", legacy: "msg-2012/legacy" } as const;
 export type CloudinaryFolder = keyof typeof CLOUDINARY_FOLDERS;
