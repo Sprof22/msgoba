@@ -229,12 +229,12 @@ export default function AnnouncementAdmin() {
                 <div className="editor-preview">
                   <div className="editor-preview-head">
                     <span className="tag">Preview · {preview.category}</span>
-                    <button type="button" onClick={() => setPreview(null)}><X size={15}/></button>
+                    <button type="button" onClick={() => setPreview(null)}><X size={15} /></button>
                   </div>
-                  {preview.coverImage && <img src={preview.coverImage} alt="Announcement preview"/>}
+                  {preview.coverImage && <img src={preview.coverImage} alt="Announcement preview" />}
                   <h2>{String(preview.title || "Untitled announcement")}</h2>
                   <p className="article-lead">{String(preview.summary || "Add a summary to preview it here.")}</p>
-                  <div className="article-body">{String(preview.body || "Add announcement content to preview it here.").split(/\n+/).filter(Boolean).map((paragraph,index)=><p key={index}>{paragraph}</p>)}</div>
+                  <div className="article-body">{String(preview.body || "Add announcement content to preview it here.").split(/\n+/).filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
                 </div>
               )}
               <div className="edit-form-grid">
@@ -326,7 +326,7 @@ export default function AnnouncementAdmin() {
               <div className="content-upload">
                 <h3>Cover image</h3>
                 {editing.coverImage && !cover && (
-                  <div className="current-content-cover"><img src={editing.coverImage} alt="Current cover" /><button type="button" onClick={()=>setEditing({...editing,coverImage:"",coverImagePublicId:""})}>Remove cover</button></div>
+                  <div className="current-content-cover"><img src={editing.coverImage} alt="Current cover" /><button type="button" onClick={() => setEditing({ ...editing, coverImage: "", coverImagePublicId: "" })}>Remove cover</button></div>
                 )}
                 <CloudinaryUploader
                   folder="announcements"
@@ -335,11 +335,11 @@ export default function AnnouncementAdmin() {
               </div>
               <div className="content-attachments">
                 <div><h3>Attachments</h3><p>Optional supporting PDF or office documents. Maximum 15 MB each.</p></div>
-                {attachments.length > 0 && <div className="attachment-list">{attachments.map((attachment,index)=><div key={attachment.publicId}><Paperclip size={14}/><span><b>{attachment.name}</b><small>{attachment.format.toUpperCase()} · {(attachment.bytes/1024/1024).toFixed(2)} MB</small></span><button type="button" aria-label={`Remove ${attachment.name}`} onClick={()=>setAttachments(items=>items.filter((_,itemIndex)=>itemIndex!==index))}><Trash2 size={14}/></button></div>)}</div>}
-                <CloudinaryAttachmentUploader onUploaded={(asset)=>setAttachments(items=>items.length<8?[...items,asset]:items)}/>
+                {attachments.length > 0 && <div className="attachment-list">{attachments.map((attachment, index) => <div key={attachment.publicId}><Paperclip size={14} /><span><b>{attachment.name}</b><small>{attachment.format.toUpperCase()} · {(attachment.bytes / 1024 / 1024).toFixed(2)} MB</small></span><button type="button" aria-label={`Remove ${attachment.name}`} onClick={() => setAttachments(items => items.filter((_, itemIndex) => itemIndex !== index))}><Trash2 size={14} /></button></div>)}</div>}
+                <CloudinaryAttachmentUploader onUploaded={(asset) => setAttachments(items => items.length < 8 ? [...items, asset] : items)} />
               </div>
               <div className="modal-actions">
-                <button type="button" className="btn upload-remove" onClick={showPreview}><Eye size={15}/>Preview</button>
+                <button type="button" className="btn upload-remove" onClick={showPreview}><Eye size={15} />Preview</button>
                 <button
                   type="button"
                   className="btn upload-remove"

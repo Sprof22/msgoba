@@ -11,6 +11,7 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
+  UserRound,
   Users,
 } from "lucide-react";
 import { Brand } from "@/components/site-header";
@@ -19,6 +20,7 @@ import { getCurrentUser, hasAdminRole } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Announcement } from "@/models/Announcement";
 import { Event } from "@/models/Event";
+import { MemberProfile } from "@/models/MemberProfile";
 import { User } from "@/models/User";
 import { redirect } from "next/navigation";
 
@@ -84,10 +86,27 @@ export default async function Admin() {
       .lean() as Promise<{ title: string; updatedAt?: Date } | null>,
   ]);
 
-  const pendingRequests = (pendingRequestsRaw as any[]).map((member) => ({
+  const pendingRequestsBase = (pendingRequestsRaw as any[]).map((member) => ({
+    id: String(member._id),
     name: String(member.name || ""),
     email: String(member.email || ""),
     createdAt: member.createdAt ? new Date(member.createdAt) : undefined,
+  }));
+  const pendingIds = pendingRequestsBase.map((member) => member.id);
+  const pendingProfiles = pendingIds.length
+    ? await MemberProfile.find({ userId: { $in: pendingIds } })
+        .select("userId profileImage")
+        .lean()
+    : [];
+  const imageByUserId = new Map(
+    (pendingProfiles as any[]).map((profile) => [
+      String(profile.userId),
+      String(profile.profileImage || ""),
+    ]),
+  );
+  const pendingRequests = pendingRequestsBase.map((member) => ({
+    ...member,
+    profileImage: imageByUserId.get(member.id) || "",
   }));
 
   const recentActivity = [
@@ -255,7 +274,13 @@ export default async function Admin() {
                   <tr key={`${member.email}-${i}`}>
                     <td>
                       <div className="person">
-                        <div className={`avatar photo-${(i % 3) + 1}`} />
+                        <div className="avatar" aria-hidden>
+                          {member.profileImage ? (
+                            <img src={member.profileImage} alt="" />
+                          ) : (
+                            <UserRound size={15} />
+                          )}
+                        </div>
                         <div>
                           <b>{member.name}</b>
                         </div>

@@ -12,9 +12,9 @@ export async function GET(request: NextRequest) {
     );
   await connectToDatabase();
   const page = Math.max(
-      1,
-      Number(request.nextUrl.searchParams.get("page")) || 1,
-    ),
+    1,
+    Number(request.nextUrl.searchParams.get("page")) || 1,
+  ),
     limit = 12,
     query = request.nextUrl.searchParams.get("q")?.trim().slice(0, 80) || "",
     country = request.nextUrl.searchParams.get("country")?.trim(),
