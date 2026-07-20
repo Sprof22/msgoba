@@ -93,24 +93,24 @@ export default async function Admin() {
   const recentActivity = [
     pendingRequests[0]
       ? {
-          id: `pending-${pendingRequests[0].email}`,
-          text: `${pendingRequests[0].name} requested membership.`,
-          when: pendingRequests[0].createdAt,
-        }
+        id: `pending-${pendingRequests[0].email}`,
+        text: `${pendingRequests[0].name} requested membership.`,
+        when: pendingRequests[0].createdAt,
+      }
       : null,
     nextEvent
       ? {
-          id: `event-${String(nextEvent.startAt)}`,
-          text: `${nextEvent.title} is upcoming.`,
-          when: nextEvent.startAt,
-        }
+        id: `event-${String(nextEvent.startAt)}`,
+        text: `${nextEvent.title} is upcoming.`,
+        when: nextEvent.startAt,
+      }
       : null,
     latestAnnouncement
       ? {
-          id: `notice-${latestAnnouncement.title}`,
-          text: `${latestAnnouncement.title} was updated.`,
-          when: latestAnnouncement.updatedAt,
-        }
+        id: `notice-${latestAnnouncement.title}`,
+        text: `${latestAnnouncement.title} was updated.`,
+        when: latestAnnouncement.updatedAt,
+      }
       : null,
   ]
     .filter(Boolean)
