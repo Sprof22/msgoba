@@ -16,16 +16,107 @@ import {
 import { Brand } from "@/components/site-header";
 import LogoutButton from "@/components/logout-button";
 import { getCurrentUser, hasAdminRole } from "@/lib/auth";
+import { connectToDatabase } from "@/lib/mongodb";
+import { Announcement } from "@/models/Announcement";
+import { Event } from "@/models/Event";
+import { User } from "@/models/User";
 import { redirect } from "next/navigation";
 
-const recent = [
-  ["Terna Iorfa", "terna@example.com", "Blue House", "photo-1"],
-  ["Gabriel Onoja", "gabriel@example.com", "Red House", "photo-2"],
-  ["Paul Orngu", "paul@example.com", "Blue House", "photo-3"],
-];
+function timeAgo(value?: Date | string | null) {
+  if (!value) return "just now";
+  const then = new Date(value).getTime();
+  const now = Date.now();
+  const diff = Math.max(0, now - then);
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+
+  if (diff < minute) return "just now";
+  if (diff < hour) return `${Math.floor(diff / minute)}m ago`;
+  if (diff < day) return `${Math.floor(diff / hour)}h ago`;
+  return `${Math.floor(diff / day)}d ago`;
+}
+
+function formatMonthDay(value: Date | string) {
+  return new Date(value).toLocaleDateString("en", {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
 export default async function Admin() {
   const user = await getCurrentUser();
   if (!hasAdminRole(user)) redirect("/admin/announcements");
+
+  await connectToDatabase();
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const [
+    totalMembers,
+    membersThisMonth,
+    pendingApproval,
+    pendingRequestsRaw,
+    upcomingEvents,
+    nextEvent,
+    publishedNotices,
+    scheduledNotices,
+    latestAnnouncement,
+  ] = await Promise.all([
+    User.countDocuments({ status: { $in: ["pending", "verified", "memorial"] } }),
+    User.countDocuments({ createdAt: { $gte: monthStart } }),
+    User.countDocuments({ status: "pending" }),
+    User.find({ status: "pending" })
+      .sort({ createdAt: -1 })
+      .limit(4)
+      .select("name email createdAt")
+      .lean(),
+    Event.countDocuments({ status: { $in: ["published", "scheduled"] }, startAt: { $gte: now } }),
+    Event.findOne({ status: { $in: ["published", "scheduled"] }, startAt: { $gte: now } })
+      .sort({ startAt: 1 })
+      .select("title startAt")
+      .lean() as Promise<{ title: string; startAt: Date } | null>,
+    Announcement.countDocuments({ status: "published" }),
+    Announcement.countDocuments({ status: "scheduled" }),
+    Announcement.findOne({ status: { $in: ["published", "scheduled"] } })
+      .sort({ updatedAt: -1 })
+      .select("title updatedAt")
+      .lean() as Promise<{ title: string; updatedAt?: Date } | null>,
+  ]);
+
+  const pendingRequests = (pendingRequestsRaw as any[]).map((member) => ({
+    name: String(member.name || ""),
+    email: String(member.email || ""),
+    createdAt: member.createdAt ? new Date(member.createdAt) : undefined,
+  }));
+
+  const recentActivity = [
+    pendingRequests[0]
+      ? {
+          id: `pending-${pendingRequests[0].email}`,
+          text: `${pendingRequests[0].name} requested membership.`,
+          when: pendingRequests[0].createdAt,
+        }
+      : null,
+    nextEvent
+      ? {
+          id: `event-${String(nextEvent.startAt)}`,
+          text: `${nextEvent.title} is upcoming.`,
+          when: nextEvent.startAt,
+        }
+      : null,
+    latestAnnouncement
+      ? {
+          id: `notice-${latestAnnouncement.title}`,
+          text: `${latestAnnouncement.title} was updated.`,
+          when: latestAnnouncement.updatedAt,
+        }
+      : null,
+  ]
+    .filter(Boolean)
+    .sort((a, b) => new Date(b!.when || 0).getTime() - new Date(a!.when || 0).getTime())
+    .slice(0, 4) as Array<{ id: string; text: string; when?: Date }>;
+
   return (
     <main className="dashboard-shell">
       <aside className="sidebar">
@@ -76,7 +167,12 @@ export default async function Admin() {
         <div className="dash-head">
           <div>
             <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-              Saturday, 11 July 2026
+              {now.toLocaleDateString("en", {
+                weekday: "long",
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}
             </p>
             <h1>Welcome back, {user!.name.split(" ")[0]}.</h1>
           </div>
@@ -101,8 +197,8 @@ export default async function Admin() {
                 <Users size={17} />
               </span>
             </div>
-            <b>184</b>
-            <span className="up">↑ 12 this month</span>
+            <b>{totalMembers}</b>
+            <span className="up">↑ {membersThisMonth} this month</span>
           </article>
           <article className="card dash-stat">
             <div className="dash-stat-top">
@@ -111,7 +207,7 @@ export default async function Admin() {
                 <ShieldCheck size={17} />
               </span>
             </div>
-            <b>8</b>
+            <b>{pendingApproval}</b>
             <span className="up">Needs your review</span>
           </article>
           <article className="card dash-stat">
@@ -121,8 +217,10 @@ export default async function Admin() {
                 <CalendarDays size={17} />
               </span>
             </div>
-            <b>3</b>
-            <span className="up">Next: 22 August</span>
+            <b>{upcomingEvents}</b>
+            <span className="up">
+              {nextEvent ? `Next: ${formatMonthDay(nextEvent.startAt)}` : "No upcoming event"}
+            </span>
           </article>
           <article className="card dash-stat">
             <div className="dash-stat-top">
@@ -131,15 +229,15 @@ export default async function Admin() {
                 <Megaphone size={17} />
               </span>
             </div>
-            <b>26</b>
-            <span className="up">4 scheduled</span>
+            <b>{publishedNotices}</b>
+            <span className="up">{scheduledNotices} scheduled</span>
           </article>
         </div>
         <div className="dash-grid">
           <article className="card panel">
             <div className="panel-head">
               <h3>Recent membership requests</h3>
-              <Link className="text-link" href="/members">
+              <Link className="text-link" href="/admin/members">
                 View all <ChevronRight size={13} />
               </Link>
             </div>
@@ -147,33 +245,29 @@ export default async function Admin() {
               <thead>
                 <tr>
                   <th>Member</th>
-                  <th>House</th>
+                  <th>Email</th>
                   <th>Submitted</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {recent.map((p, i) => (
-                  <tr key={p[0]}>
+                {pendingRequests.length ? pendingRequests.map((member, i) => (
+                  <tr key={`${member.email}-${i}`}>
                     <td>
                       <div className="person">
-                        <div className={`avatar ${p[3]}`} />
+                        <div className={`avatar photo-${(i % 3) + 1}`} />
                         <div>
-                          <b>{p[0]}</b>
-                          <br />
-                          <span style={{ color: "var(--muted)", fontSize: 10 }}>
-                            {p[1]}
-                          </span>
+                          <b>{member.name}</b>
                         </div>
                       </div>
                     </td>
-                    <td>{p[2]}</td>
-                    <td>{i + 1}h ago</td>
+                    <td>{member.email}</td>
+                    <td>{timeAgo(member.createdAt)}</td>
                     <td>
                       <span className="status">Pending</span>
                     </td>
                   </tr>
-                ))}
+                )) : <tr><td colSpan={4}><span style={{ color: "var(--muted)" }}>No pending requests right now.</span></td></tr>}
               </tbody>
             </table>
           </article>
@@ -183,35 +277,16 @@ export default async function Admin() {
               <Activity size={17} />
             </div>
             <div className="activity">
-              <div className="activity-item">
-                <span className="activity-dot" />
-                <p>
-                  <b>Emmanuel Oche</b> updated his profile.
-                  <br />
-                  12 minutes ago
-                </p>
-              </div>
-              <div className="activity-item">
-                <span className="activity-dot" />
-                <p>
-                  <b>Homecoming 2026</b> received 6 new RSVPs.
-                  <br />1 hour ago
-                </p>
-              </div>
-              <div className="activity-item">
-                <span className="activity-dot" />
-                <p>
-                  <b>Welfare Fund Update</b> was published.
-                  <br />3 hours ago
-                </p>
-              </div>
-              <div className="activity-item">
-                <span className="activity-dot" />
-                <p>
-                  <b>Gabriel Onoja</b> requested membership.
-                  <br />5 hours ago
-                </p>
-              </div>
+              {recentActivity.length ? recentActivity.map((item) => (
+                <div className="activity-item" key={item.id}>
+                  <span className="activity-dot" />
+                  <p>
+                    <b>{item.text}</b>
+                    <br />
+                    {timeAgo(item.when)}
+                  </p>
+                </div>
+              )) : <div className="activity-item"><span className="activity-dot" /><p><b>No recent activity yet.</b></p></div>}
             </div>
           </article>
         </div>
