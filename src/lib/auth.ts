@@ -5,7 +5,7 @@ import { connectToDatabase } from "./mongodb";
 import { Session } from "@/models/Session";
 import { User } from "@/models/User";
 
-export const SESSION_COOKIE = "msg2012_session";
+export const SESSION_COOKIE = "msgoba12_session";
 const SESSION_DAYS = 14;
 export const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
 export const createOpaqueToken = () => randomBytes(32).toString("base64url");
