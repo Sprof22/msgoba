@@ -710,8 +710,28 @@ button {
   margin-top: 45px;
   padding-top: 23px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   font-size: 11px;
+}
+.powered-by-helpr {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #94a7c0;
+  white-space: nowrap;
+  transition: color .2s ease, opacity .2s ease;
+}
+.powered-by-helpr img {
+  width: 86px;
+  height: auto;
+  opacity: .9;
+}
+.powered-by-helpr:hover {
+  color: #fff;
+}
+.powered-by-helpr:hover img {
+  opacity: 1;
 }
 
 .page-hero {
