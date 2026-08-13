@@ -8,6 +8,7 @@ import { Announcement } from "@/models/Announcement";
 import { Event } from "@/models/Event";
 import { LegacyBrother } from "@/models/LegacyBrother";
 import { MemberProfile } from "@/models/MemberProfile";
+import { Prefect } from "@/models/Prefect";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +24,11 @@ function yearsOfBrotherhood(today = new Date()) {
 
 export default async function Home() {
   await connectToDatabase();
-  const [event, announcements, legacyBrothers, countryGroups] = await Promise.all([
+  const [event, announcements, legacyBrothers, prefects, countryGroups] = await Promise.all([
     Event.findOne({ ...liveEventFilter(["public"]), status: { $ne: "cancelled" }, startAt: { $gte: new Date() } }).sort({ featured: -1, startAt: 1 }).lean() as Promise<any>,
     Announcement.find(liveContentFilter(["public"])).sort({ pinned: -1, featured: -1, publishAt: -1 }).limit(2).lean() as Promise<any[]>,
     LegacyBrother.find({ active: true }).sort({ order: 1, updatedAt: -1 }).limit(8).lean() as Promise<any[]>,
+    Prefect.find({ active: true }).sort({ order: 1, updatedAt: -1 }).limit(8).lean() as Promise<any[]>,
     MemberProfile.aggregate([
       { $match: { moderationStatus: { $in: ["visible", "memorial"] }, country: { $exists: true, $ne: "" } } },
       { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "member" } },
@@ -51,6 +53,8 @@ export default async function Home() {
       <section className="section"><div className="container"><div className="section-head"><div><span className="eyebrow">Stay in the loop</span><h2>What&apos;s happening<br />in our community</h2></div><p>From reunion plans to community projects, never miss the moments that keep our brotherhood moving forward.</p></div>{updates.length ? <div className="announcement-grid live-home-updates">{updates.map((item, index) => { const date = new Date(item.date); return <article className={`card news-card ${index === 0 ? "featured" : ""}`} key={String(item._id)}><div className="visual" style={item.coverImage ? { backgroundImage: `linear-gradient(135deg,rgba(7,29,60,.08),rgba(7,29,60,.48)),url(${item.coverImage})` } : undefined}><span className="date-badge"><b>{date.getDate().toString().padStart(2, "0")}</b><span>{date.toLocaleString("en", { month: "short" }).toUpperCase()}</span></span></div><div className="news-body"><span className="tag">{item.kind === "event" ? "Upcoming event" : item.category}</span><h3>{item.title}</h3><p>{item.summary}</p><Link className="text-link" href={item.kind === "event" ? `/events/${item.slug}` : `/announcements/${item.slug}`}>{item.kind === "event" ? "View event details" : "Read announcement"} <ArrowRight size={14} /></Link></div></article> })}</div> : <div className="empty-state compact-empty"><Bell /><h3>Fresh updates are coming</h3><p>Published announcements and the next event will appear here.</p></div>}</div></section>
 
       <section className="section legacy" id="legacy"><div className="container legacy-grid"><div className="legacy-photo"><div className="legacy-seal">In God<br />Our Strength</div></div><div><span className="eyebrow">Our shared legacy</span><h2>We left the school.<br />The school never left us.</h2><p>We arrived as boys from different homes and left as brothers with a common story. The discipline, faith and friendships formed at Mount Saint Gabriel&apos;s continue to shape the men we are today.</p><div className="quote">“The Mount gave us more than an education. It gave us each other.”</div><p>This digital home keeps that bond alive—wherever life has taken us—and creates room for the next chapter of our collective story.</p><div className="legacy-values"><div><ShieldCheck size={18} /> Faith & character</div><div><Users size={18} /> Lifelong brotherhood</div><div><Sparkles size={18} /> Service & legacy</div></div></div></div></section>
+
+      {prefects.length ? <section className="section leadership-section"><div className="container"><div className="section-head"><div><span className="eyebrow">Student leadership</span><h2>Those who led<br />from the front</h2></div><p>Honouring the prefects who served our school community with discipline, responsibility, and the example of brotherhood.</p></div><div className="prefect-grid">{prefects.map((prefect, index) => <article className="card prefect-card" key={String(prefect._id)}><div className={`prefect-photo ${prefect.photo ? "" : fallbackPhotos[index % fallbackPhotos.length]}`} style={prefect.photo ? { backgroundImage: `url(${prefect.photo})` } : undefined}><span>Class of 2012</span></div><div className="prefect-info"><span className="tag">{prefect.post}</span><h3>{prefect.name}</h3></div></article>)}</div></div></section> : null}
 
       <section className="section"><div className="container"><div className="section-head"><div><span className="eyebrow">Across the world</span><h2>Meet the brothers<br />behind the legacy</h2></div><div><p>Different paths, one foundation. Reconnect, collaborate, and celebrate how far we have all come.</p><Link className="text-link" href="/members">View all members <ArrowRight size={14} /></Link></div></div>{legacyBrothers.length ? <div className="member-row">{legacyBrothers.map((m, index) => <Link href="/members" className="card member-card" key={String(m._id)}><div className={`member-photo ${m.photo ? "" : fallbackPhotos[index % fallbackPhotos.length]}`} style={m.photo ? { backgroundImage: `url(${m.photo})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}><i className="member-status" /></div><div className="member-info"><h3>{m.name}</h3><p>{m.role}</p><div className="member-meta"><span><MapPin size={12} />{m.place}</span><span><Globe2 size={12} />2012</span></div></div></Link>)}</div> : <div className="empty-state compact-empty"><Users /><h3>Legacy section is being curated</h3><p>Profiles selected by administrators will appear here soon.</p></div>}</div></section>
 

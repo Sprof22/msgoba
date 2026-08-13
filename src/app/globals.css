@@ -610,6 +610,57 @@ button {
   font-size: 11px;
   color: #7c8797;
 }
+.leadership-section {
+  background: #f7f4eb;
+}
+.prefect-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.prefect-card {
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.prefect-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
+.prefect-photo {
+  height: 275px;
+  background-color: var(--navy);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+.prefect-photo:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgba(4, 20, 45, .72));
+}
+.prefect-photo span {
+  position: absolute;
+  z-index: 1;
+  right: 15px;
+  bottom: 13px;
+  color: #fff;
+  font: 700 10px "Manrope";
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.prefect-info {
+  padding: 18px 19px 21px;
+}
+.prefect-info .tag {
+  display: inline-block;
+  margin-bottom: 9px;
+}
+.prefect-info h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 18px;
+}
 .member-meta span {
   display: flex;
   align-items: center;
@@ -1290,6 +1341,7 @@ button {
   }
   .announcement-grid,
   .member-row,
+  .prefect-grid,
   .directory-grid,
   .event-grid {
     grid-template-columns: 1fr;

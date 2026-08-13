@@ -11,6 +11,7 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
+  GraduationCap,
   UserRound,
   Users,
 } from "lucide-react";
@@ -156,6 +157,10 @@ export default async function Admin() {
           <Link href="/admin/legacy-brothers">
             <Sparkles size={18} />
             <span>Legacy brothers</span>
+          </Link>
+          <Link href="/admin/prefects">
+            <GraduationCap size={18} />
+            <span>Prefects</span>
           </Link>
           <Link href="/admin/announcements">
             <Megaphone size={18} />
