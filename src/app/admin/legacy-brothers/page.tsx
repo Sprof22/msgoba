@@ -21,6 +21,7 @@ type LegacyBrother = {
     place: string;
     photo?: string;
     photoPublicId?: string;
+    photoPosition?: string;
     order: number;
     active: boolean;
     updatedAt: string;
@@ -33,6 +34,7 @@ type EditorState = {
     place: string;
     photo?: string;
     photoPublicId?: string;
+    photoPosition?: string;
     order: number;
     active: boolean;
 };
@@ -41,6 +43,7 @@ const emptyEditor: EditorState = {
     name: "",
     role: "",
     place: "",
+    photoPosition: "50% 50%",
     order: 0,
     active: true,
 };
@@ -82,6 +85,7 @@ export default function LegacyBrothersAdminPage() {
             place: item.place,
             photo: item.photo,
             photoPublicId: item.photoPublicId,
+            photoPosition: item.photoPosition || "50% 50%",
             order: item.order,
             active: item.active,
         });
@@ -103,6 +107,7 @@ export default function LegacyBrothersAdminPage() {
             active: form.get("active") === "on",
             photo: cover?.secureUrl || editing.photo || "",
             photoPublicId: cover?.publicId || editing.photoPublicId || "",
+            photoPosition: editing.photoPosition || "50% 50%",
         };
 
         const url = editing._id
@@ -284,6 +289,7 @@ export default function LegacyBrothersAdminPage() {
                                     </div>
                                 )}
                                 <CloudinaryUploader folder="legacy" onUploaded={setCover} />
+                                <PhotoFocus value={editing.photoPosition || "50% 50%"} onChange={(photoPosition) => setEditing({ ...editing, photoPosition })} />
                             </div>
 
                             <div className="modal-actions">
@@ -314,6 +320,11 @@ export default function LegacyBrothersAdminPage() {
             </div>
         </main>
     );
+}
+
+function PhotoFocus({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+    const y = Number(value.match(/(\d+)%$/)?.[1] || 50);
+    return <div className="photo-focus"><label>Photo focus <small>Move up to keep the face in view.</small></label><input type="range" min="0" max="100" value={y} onChange={(event) => onChange(`50% ${event.target.value}%`)} /><div><span>Top</span><span>Centre</span><span>Bottom</span></div></div>;
 }
 
 function Field({

@@ -7,6 +7,7 @@ const legacyBrotherSchema = new Schema(
         place: { type: String, required: true, trim: true },
         photo: String,
         photoPublicId: String,
+        photoPosition: { type: String, default: "50% 50%" },
         order: { type: Number, default: 0, index: true },
         active: { type: Boolean, default: true, index: true },
         createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },

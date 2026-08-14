@@ -234,6 +234,41 @@ button {
   align-items: center;
   gap: 10px;
 }
+.account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--navy);
+  transition: border-color .2s ease, background .2s ease;
+}
+.account-chip:hover {
+  border-color: var(--gold);
+  background: #fffbef;
+}
+.account-avatar {
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--navy);
+  color: #fff;
+  font: 800 11px "Manrope";
+}
+.account-copy {
+  display: grid;
+  line-height: 1.1;
+}
+.account-copy small {
+  color: var(--muted);
+  font-size: 9px;
+}
+.account-copy b {
+  font: 800 11px "Manrope";
+}
 .menu-btn {
   display: none;
   background: none;
@@ -661,6 +696,30 @@ button {
   color: var(--navy);
   font-size: 18px;
 }
+.admin-gallery-grid,
+.public-gallery-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.admin-gallery-card { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; }
+.admin-gallery-card > img { width:100%; height:165px; object-fit:cover; display:block; }
+.admin-gallery-card > div { padding:12px; display:grid; gap:7px; }
+.admin-gallery-card b { font-size:13px; color:var(--navy); }
+.admin-gallery-card small { color:var(--muted); font-size:11px; }
+.gallery-current { width:130px; height:100px; object-fit:cover; border-radius:10px; margin-bottom:12px; }
+.photo-focus { margin-top:17px; max-width:360px; }
+.photo-focus label { display:grid; gap:4px; color:var(--ink); font:700 12px "Manrope"; }
+.photo-focus label small { color:var(--muted); font:400 11px "Manrope"; }
+.photo-focus input { width:100%; accent-color:var(--gold); margin:9px 0 4px; }
+.photo-focus > div { display:flex; justify-content:space-between; color:var(--muted); font-size:10px; }
+.gallery-filters { display:flex; gap:9px; flex-wrap:wrap; margin-bottom:28px; }
+.gallery-filters button { border:1px solid var(--line); border-radius:999px; background:#fff; padding:9px 15px; color:var(--muted); font:700 12px "Manrope"; cursor:pointer; }
+.gallery-filters button.active,.gallery-filters button:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
+.public-gallery-item { border:0; padding:0; background:var(--navy); position:relative; overflow:hidden; min-height:245px; text-align:left; cursor:pointer; }
+.public-gallery-item img { width:100%; height:100%; position:absolute; inset:0; object-fit:cover; transition:transform .35s ease; }
+.public-gallery-item:hover img { transform:scale(1.06); }
+.public-gallery-item span { position:absolute; z-index:1; inset:auto 0 0; padding:42px 18px 17px; color:#fff; display:grid; gap:4px; background:linear-gradient(transparent,rgba(4,20,45,.88)); width:100%; }
+.public-gallery-item b { font:800 14px "Manrope"; }.public-gallery-item small { font-size:11px; opacity:.85; }
+.gallery-lightbox { position:fixed; z-index:100; inset:0; background:rgba(1,8,20,.94); display:grid; place-items:center; padding:45px 80px; }
+.gallery-lightbox figure { margin:0; max-width:min(100%,1000px); max-height:100%; display:grid; gap:13px; color:#fff; }.gallery-lightbox figure img { max-width:100%; max-height:75vh; object-fit:contain; }.gallery-lightbox figcaption { display:grid; gap:3px; font-size:13px; }.gallery-lightbox figcaption span { color:#b5c1d4; font-size:11px; }
+.lightbox-close,.lightbox-nav { position:absolute; border:0; color:#fff; background:rgba(255,255,255,.12); display:grid; place-items:center; cursor:pointer; }.lightbox-close { right:24px; top:24px; width:38px; height:38px; border-radius:50%; }.lightbox-nav { top:50%; transform:translateY(-50%); width:45px; height:60px; }.lightbox-nav.prev { left:18px; }.lightbox-nav.next { right:18px; }
 .member-meta span {
   display: flex;
   align-items: center;
@@ -1279,6 +1338,13 @@ button {
   .nav-actions .btn {
     display: none;
   }
+  .account-chip {
+    padding: 3px;
+  }
+  .account-copy,
+  .account-chip > svg {
+    display: none;
+  }
   .brand-mark {
     width: 40px;
     height: 40px;
@@ -1342,6 +1408,8 @@ button {
   .announcement-grid,
   .member-row,
   .prefect-grid,
+  .public-gallery-grid,
+  .admin-gallery-grid,
   .directory-grid,
   .event-grid {
     grid-template-columns: 1fr;
