@@ -26,6 +26,7 @@ body {
   background: #fff;
   font-family: "DM Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 h1,
 h2,
@@ -103,6 +104,7 @@ button {
   gap: 9px;
   border: 0;
   border-radius: 999px;
+  min-height: 44px;
   padding: 13px 20px;
   font-weight: 700;
   transition: 0.2s;
@@ -274,6 +276,9 @@ button {
   background: none;
   border: 0;
   color: var(--navy);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
 }
 
 .hero {
@@ -1345,7 +1350,7 @@ button {
 }
 @media (max-width: 620px) {
   .container {
-    width: min(100% - 28px, 1180px);
+    width: min(100% - 24px, 1180px);
   }
   .topbar {
     display: none;
@@ -1373,8 +1378,8 @@ button {
     flex-basis: 49px;
   }
   .hero {
-    min-height: 700px;
-    align-items: flex-start;
+    min-height: auto;
+    display: block;
   }
   .hero:before {
     background-position: 65% center;
@@ -1388,34 +1393,78 @@ button {
   }
   .hero-content {
     width: 100%;
-    padding-top: 70px;
+    padding: 54px 0 36px;
+  }
+  .hero-kicker {
+    font-size: 11px;
+    letter-spacing: 0.1em;
   }
   .hero h1 {
-    font-size: 49px;
+    font-size: clamp(35px, 11vw, 46px);
+    margin: 18px 0 16px;
   }
   .hero p {
     font-size: 15px;
+    line-height: 1.65;
   }
   .hero-actions {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .hero-actions .btn {
+    width: 100%;
+    min-height: 48px;
+  }
+  .hero-foot {
+    position: static;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(4, 20, 44, 0.6);
+  }
+  .hero-stats {
+    gap: 0;
   }
   .hero-stats {
     grid-template-columns: repeat(2, 1fr);
   }
   .stat {
-    padding: 13px 10px;
+    padding: 13px 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.13);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  }
+  .stat:nth-child(2n) {
+    border-right: 0;
+  }
+  .stat:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+  .quick-strip {
+    margin-top: 0;
   }
   .quick-grid {
     grid-template-columns: 1fr 1fr;
   }
   .quick-item {
-    padding: 18px 8px;
+    min-height: 56px;
+    padding: 16px 10px;
+    border-right: 1px solid #e1ddd3;
+    border-bottom: 1px solid #e1ddd3;
+  }
+  .quick-item:nth-child(2n) {
+    border-right: 0;
+  }
+  .quick-item:nth-last-child(-n + 2) {
+    border-bottom: 0;
   }
   .quick-icon {
     display: none;
   }
   .section {
-    padding: 70px 0;
+    padding: 58px 0;
+  }
+  .section-head h2 {
+    font-size: clamp(30px, 10vw, 40px);
   }
   .section-head {
     display: block;
@@ -1435,6 +1484,13 @@ button {
   .news-card.featured {
     grid-column: auto;
   }
+  .news-body {
+    padding: 20px;
+  }
+  .news-body h3,
+  .featured .news-body h3 {
+    font-size: 22px;
+  }
   .legacy-photo {
     min-height: 380px;
   }
@@ -1446,9 +1502,12 @@ button {
   }
   .cta-inner {
     display: block;
+    padding: 44px 0;
   }
   .cta-inner .btn {
-    margin-top: 22px;
+    margin-top: 18px;
+    width: 100%;
+    min-height: 48px;
   }
   .footer-grid {
     grid-template-columns: 1fr;
@@ -1521,19 +1580,61 @@ button {
     left: 0;
     right: 0;
     top: 100%;
-    padding: 22px max(24px, calc((100% - 1180px) / 2));
+    padding: 18px max(18px, calc((100% - 1180px) / 2)) 28px;
     gap: 4px;
     background: #fff;
     border-top: 1px solid var(--line);
     box-shadow: 0 20px 40px rgba(7, 29, 60, 0.15);
+    max-height: calc(100dvh - 80px);
+    overflow-y: auto;
   }
   .mobile-nav > a:not(.btn) {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
     padding: 12px 6px;
     font-weight: 700;
     color: var(--navy);
   }
   .mobile-nav .btn {
     margin-top: 10px;
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-copy strong {
+    font-size: 13px;
+  }
+  .brand-copy small {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 10.5vw, 41px);
+  }
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+  .quick-item,
+  .quick-item:nth-child(2n),
+  .quick-item:nth-last-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid #e1ddd3;
+  }
+  .quick-item:last-child {
+    border-bottom: 0;
+  }
+  .section {
+    padding: 52px 0;
+  }
+  .legacy-photo {
+    min-height: 320px;
+    border-radius: 140px 140px 20px 20px;
+  }
+  .cta-inner h2 {
+    font-size: 30px;
   }
 }
 
